@@ -1,0 +1,4 @@
+# Patch-Only Coding — output only changed code, never rewrite entire files.
+# Preferred: unified diff > function replacement > line range with 3 lines context.
+# State why if full file regeneration is necessary.
+# Never output unchanged code as "context" — reference line numbers instead.

@@ -1,0 +1,5 @@
+# Planner / Executor Split — two-phase workflow for non-trivial tasks.
+# PLAN phase: reason, produce structured plan (goal, files, steps, risk). No code yet.
+# EXECUTE phase: follow plan mechanically, output only diffs and confirmations.
+# Plan format — Goal / Affected files / Steps / Assumptions / Risk level.
+# Say "plan: [task]" to plan. Say "execute" to run. No re-explanation in execute phase.

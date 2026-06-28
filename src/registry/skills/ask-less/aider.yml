@@ -1,0 +1,4 @@
+# Ask-Less Mode — assume and proceed instead of asking clarifying questions.
+# State assumption in one line: "Assuming [X]. If wrong, correct me."
+# Only ask when ambiguity would cause irreversible harm (deleting data, breaking API contracts).
+# For everything else: make the reasonable call and go.

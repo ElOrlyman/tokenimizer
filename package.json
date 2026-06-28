@@ -1,0 +1,40 @@
+{
+  "name": "tokenimizer",
+  "version": "0.1.0",
+  "description": "The operating system for token-efficient AI workflows",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/strootman-advertising/tokenimizer.git"
+  },
+  "bin": {
+    "tokenimizer": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "esbuild src/cli.ts --bundle --platform=node --outdir=dist && node scripts/copy-registry.mjs",
+    "build:watch": "esbuild src/cli.ts --bundle --platform=node --outdir=dist --watch",
+    "prepare": "node scripts/prepare.js",
+    "prepublishOnly": "npm run build",
+    "test": "vitest run --fileParallelism=false",
+    "test:watch": "vitest",
+    "dev": "npm run build && node dist/cli.js"
+  },
+  "keywords": ["ai", "tokens", "claude", "copilot", "cursor", "skills", "prompt-engineering"],
+  "author": "Strootman Advertising",
+  "license": "MIT",
+  "dependencies": {
+    "cli-table3": "^0.6.5",
+    "commander": "^14.0.3",
+    "fast-glob": "^3.3.3",
+    "js-yaml": "^4.1.1",
+    "minimatch": "^10.2.5",
+    "picocolors": "^1.1.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.0.0",
+    "esbuild": "^0.28.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.7"
+  }
+}
