@@ -1,5 +1,5 @@
 {
-  "version": "1",
+  "version": "2",
   "skills": [
     {
       "id": "caveman",
@@ -30,7 +30,7 @@
     {
       "id": "ask-less",
       "name": "Ask-Less Mode",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "description": "Assume and proceed instead of asking clarifying questions. Eliminates 1-3 extra roundtrips per task.",
       "category": "workflow",
       "priority": "optional",
@@ -43,7 +43,7 @@
     {
       "id": "planner-executor",
       "name": "Planner / Executor Split",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "description": "Two-phase workflow: plan first (no code), then execute mechanically. Routes reasoning to capable models, implementation to cheaper ones.",
       "category": "workflow",
       "priority": "optional",
@@ -52,6 +52,45 @@
       "conflicts": [],
       "requires": [],
       "tags": ["workflow", "planning", "model-routing", "cost"]
+    },
+    {
+      "id": "context-compressor",
+      "name": "Context Compressor",
+      "version": "1.0.0",
+      "description": "Compress long conversations into a ~500-token re-entry block. Slash context cost on session restart.",
+      "category": "context",
+      "priority": "strongly_recommended",
+      "tokenImpact": { "input": -70, "output": -5 },
+      "targets": ["claude-code", "cursor", "copilot", "windsurf", "aider"],
+      "conflicts": [],
+      "requires": [],
+      "tags": ["context", "compression", "handoff", "session"]
+    },
+    {
+      "id": "repo-aware-context",
+      "name": "Repo-Aware Minimal Context",
+      "version": "1.0.0",
+      "description": "Progressive context loading — only pull what the task needs. Never load entire repos.",
+      "category": "context",
+      "priority": "strongly_recommended",
+      "tokenImpact": { "input": -40, "output": 0 },
+      "targets": ["claude-code", "cursor", "copilot", "windsurf", "aider"],
+      "conflicts": [],
+      "requires": [],
+      "tags": ["context", "progressive", "input", "repo"]
+    },
+    {
+      "id": "cost-guardrails",
+      "name": "Cost Guardrails",
+      "version": "1.0.0",
+      "description": "Estimate scope and token cost before large operations. Prevent runaway multi-file rewrites.",
+      "category": "cost",
+      "priority": "optional",
+      "tokenImpact": { "input": -25, "output": -20 },
+      "targets": ["claude-code", "cursor", "copilot", "windsurf", "aider"],
+      "conflicts": [],
+      "requires": [],
+      "tags": ["cost", "guardrails", "estimation", "scope"]
     }
   ]
 }

@@ -1,4 +1,16 @@
 node_modules/
 dist/
-.tokenimizer/
 *.bak
+
+# tokenimizer generated artifacts — not user content
+.tokenimizer/cache/
+.tokenimizer/watcher/
+.tokenimizer/snapshots/
+.tokenimizer/backups/
+
+# tokenimizer state files (ephemeral)
+.tokenimizer/restore.json
+.tokenimizer/tokenimizer.lock.json
+
+# tokenimizer context docs are NOT ignored — they are user-maintained and should be committed
+# .tokenimizer/context/ ← intentionally tracked

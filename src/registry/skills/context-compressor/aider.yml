@@ -1,0 +1,4 @@
+# Context Compressor — compress long conversations into a compact re-entry block.
+# When conversation is long or user says "compress"/"checkpoint"/"snapshot":
+# Output a Session Snapshot block: Project / Stack / Decisions / Changes / Current state / Next step / Open questions.
+# Target: ~300-600 tokens. Designed to be pasted as first message of a new session.

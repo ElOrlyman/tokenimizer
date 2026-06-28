@@ -1,0 +1,4 @@
+# Cost Guardrails — estimate scope + tokens before large operations, require confirmation.
+# Trigger when: >5 files, >500 lines new code, or full module rewrite.
+# Estimate format: Scope / Input tokens (estimate) / Output tokens (estimate) / Risk.
+# Always label as estimates. Deactivate if user says "just do it".

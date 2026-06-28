@@ -1,6 +1,6 @@
 {
   "name": "tokenimizer",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "The operating system for token-efficient AI workflows",
   "repository": {
     "type": "git",
@@ -18,10 +18,19 @@
     "test:watch": "vitest",
     "dev": "npm run build && node dist/cli.js"
   },
-  "keywords": ["ai", "tokens", "claude", "copilot", "cursor", "skills", "prompt-engineering"],
+  "keywords": [
+    "ai",
+    "tokens",
+    "claude",
+    "copilot",
+    "cursor",
+    "skills",
+    "prompt-engineering"
+  ],
   "author": "Strootman Advertising",
   "license": "MIT",
   "dependencies": {
+    "chokidar": "^5.0.0",
     "cli-table3": "^0.6.5",
     "commander": "^14.0.3",
     "fast-glob": "^3.3.3",

@@ -14,6 +14,13 @@ import { registerList }      from './commands/list.js';
 import { registerDoctor }    from './commands/doctor.js';
 import { registerHooks }     from './commands/hooks.js';
 
+// v2 commands
+import { makeContextCommand }       from './commands/context.js';
+import { makeIndexCommand }         from './commands/index-cmd.js';
+import { makeCompressCommand, makeCheckpointCommand, makeHandoffCommand } from './commands/compress.js';
+import { makeRecommendModelCommand } from './commands/recommend-model.js';
+import { makeWatchCommand }         from './commands/watch.js';
+
 const program = new Command();
 
 program
@@ -41,8 +48,24 @@ registerList(program);
 registerDoctor(program);
 registerHooks(program);
 
-// Show welcome banner when called with no arguments
-if (process.argv.length <= 2) {
+// v2 commands
+program.addCommand(makeContextCommand());
+program.addCommand(makeIndexCommand());
+program.addCommand(makeCompressCommand());
+program.addCommand(makeCheckpointCommand());
+program.addCommand(makeHandoffCommand());
+program.addCommand(makeRecommendModelCommand());
+program.addCommand(makeWatchCommand());
+
+// Daemon entry point — watcher process spawns itself with --watcher-daemon
+const daemonCwdIdx = process.argv.indexOf('--watcher-cwd');
+if (process.argv.includes('--watcher-daemon')) {
+  const daemonCwd = daemonCwdIdx !== -1 ? process.argv[daemonCwdIdx + 1] : process.cwd();
+  import('./core/watcher/index.js')
+    .then(({ runDaemon }) => runDaemon(daemonCwd))
+    .catch(() => process.exit(1));
+} else if (process.argv.length <= 2) {
+  // Show welcome banner when called with no arguments
   try {
     const skills = loadRegistry();
     out(renderWelcomeHeader(process.cwd(), skills.length));

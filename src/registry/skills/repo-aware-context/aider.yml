@@ -1,0 +1,5 @@
+# Repo-Aware Minimal Context — progressive context loading, never load entire repos.
+# Order: project summary > relevant module > specific files > specific functions > solve.
+# Never pre-load files. Never include node_modules/lockfiles/build outputs.
+# Trim logs to error block + 10 lines. Follow imports one hop only.
+# Reference line numbers instead of quoting unchanged code.

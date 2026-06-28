@@ -1,0 +1,43 @@
+{
+  "_comment": "Community-maintained model routing guide. Edit to match your team's model subscriptions.",
+  "version": "1",
+  "tiers": {
+    "trivial": {
+      "label": "Trivial edit",
+      "description": "Typos, spacing, comment edits — no reasoning needed",
+      "recommendation": "smallest available model / autocomplete",
+      "examples": ["claude-haiku-4-5", "gpt-4o-mini", "gemini-flash", "copilot inline"]
+    },
+    "simple": {
+      "label": "Simple change",
+      "description": "Single-file edits, renames, format fixes, small bug fixes",
+      "recommendation": "fast mid-tier model",
+      "examples": ["claude-haiku-4-5", "gpt-4o-mini", "gemini-flash"]
+    },
+    "medium": {
+      "label": "Medium task",
+      "description": "Multi-file changes, new functions, integration tests",
+      "recommendation": "mid-tier model",
+      "examples": ["claude-sonnet-4-6", "gpt-4o", "gemini-pro"]
+    },
+    "complex": {
+      "label": "Complex task",
+      "description": "Feature implementation, debugging subtle issues, writing tests for untested code",
+      "recommendation": "capable mid/high-tier model",
+      "examples": ["claude-sonnet-4-6", "claude-opus-4-8", "gpt-4o", "o3-mini"]
+    },
+    "reasoning": {
+      "label": "Deep reasoning",
+      "description": "Architecture design, security audits, migration planning, performance analysis",
+      "recommendation": "highest reasoning model available",
+      "examples": ["claude-opus-4-8", "o3", "gemini-ultra", "claude-fable-5"]
+    }
+  },
+  "patterns": [
+    { "keywords": ["typo", "spacing", "whitespace", "trailing newline"],  "tier": "trivial" },
+    { "keywords": ["rename", "move file", "add import", "bump version"],   "tier": "simple" },
+    { "keywords": ["fix", "update field", "change message", "lint"],       "tier": "simple" },
+    { "keywords": ["implement", "add feature", "integrate", "build"],      "tier": "complex" },
+    { "keywords": ["architect", "design", "migrate", "security", "audit"], "tier": "reasoning" }
+  ]
+}

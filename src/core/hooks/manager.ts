@@ -3,6 +3,7 @@ import path from 'path';
 import { writeAtomic, readOrNull, ensureDir, exists } from '../../utils/fs.js';
 import type { HookName, HookStatus } from '../../types/hook.js';
 import { ALL_HOOKS } from '../../types/hook.js';
+import { writeHookScripts, removeHookScripts } from './scripts.js';
 
 const TOKENIMIZER_TAG   = '# tokenimizer-hook-begin';
 const TOKENIMIZER_END   = '# tokenimizer-hook-end';
@@ -80,11 +81,15 @@ export function hookStatus(cwd: string): HookStatus[] {
 }
 
 export function installAllHooks(cwd: string, dryRun: boolean) {
-  return ALL_HOOKS.map(name => ({ name, result: installHook(cwd, name, dryRun) }));
+  const results = ALL_HOOKS.map(name => ({ name, result: installHook(cwd, name, dryRun) }));
+  if (!dryRun) writeHookScripts(cwd);
+  return results;
 }
 
 export function uninstallAllHooks(cwd: string, dryRun: boolean) {
-  return ALL_HOOKS.map(name => ({ name, result: uninstallHook(cwd, name, dryRun) }));
+  const results = ALL_HOOKS.map(name => ({ name, result: uninstallHook(cwd, name, dryRun) }));
+  if (!dryRun) removeHookScripts(cwd);
+  return results;
 }
 
 function escapeRegex(s: string): string {
