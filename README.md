@@ -4,14 +4,33 @@
 
 #
 
-The operating system for token-efficient AI workflows.
-
-Install once per project. Every AI assistant you use — Claude Code, Copilot, Cursor, Windsurf,
-Aider — reads the same instructions and immediately costs less to run.
+tokenimizer is a CLI that installs token-saving skills into every AI assistant you use — Claude Code, Copilot, Cursor, Windsurf, and Aider — with a single command. Skills are instruction blocks that cut output tokens by up to 80% (no filler, diff-only edits), compress context on session restart, and route tasks to cheaper models automatically. One-time setup per project. No runtime, no cloud, no subscriptions.
 
 ```bash
 npx tokenimizer init
 ```
+
+---
+
+## Table of contents
+
+- [How it works](#how-it-works)
+- [Installation](#installation)
+- [The 7 token-saving skills](#the-7-token-saving-skills)
+- [Token impact summary](#token-impact-summary)
+- [The mechanics — why these numbers matter](#the-mechanics--why-these-numbers-matter)
+- [Trade-offs and when it is NOT worth it](#trade-offs-and-when-it-is-not-worth-it)
+- [Is it worth it for your workflow?](#is-it-worth-it-for-your-workflow)
+- [Context lifecycle](#context-lifecycle)
+- [Repository memory index](#repository-memory-index)
+- [Session compression workflow](#session-compression-workflow)
+- [Model routing](#model-routing)
+- [Full command reference](#full-command-reference)
+- [How skills are installed](#how-skills-are-installed)
+- [Supported AI assistants](#supported-ai-assistants)
+- [Project layout](#project-layout)
+- [Development](#development)
+- [License](#license)
 
 ---
 
