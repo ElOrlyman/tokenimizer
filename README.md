@@ -2,7 +2,7 @@
   <img src="assets/logo.svg" alt="tokenimizer" width="280" />
 </p>
 
-# tokenimizer
+#
 
 The operating system for token-efficient AI workflows.
 
