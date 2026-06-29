@@ -17,65 +17,74 @@ npx tokenimizer init
 
 ## How it works
 
-tokenimizer operates across three complementary layers. You configure once; all three run
-automatically from that point forward.
+tokenimizer operates across three complementary layers. You configure once; all three run automatically from that point forward.
+
+```mermaid
+flowchart TB
+    init(["$ npx tokenimizer init"])
+    init --> L1 & L2 & L3
+
+    subgraph L1["  ① Skill Files — always on  "]
+        s["Instruction blocks written to each assistant's config file.\nThe AI reads them on every session start.\nNo process running. No runtime cost."]
+    end
+
+    subgraph L2["  ② Git Hooks — event-driven  "]
+        h["Fires at commit / checkout / merge / push.\nAuto-refreshes context docs and repo index.\nNon-blocking — never fails a git operation."]
+    end
+
+    subgraph L3["  ③ Background Watcher — optional  "]
+        w["Chokidar daemon started with tokenimizer watch.\nMarks repo index stale when source files change.\nWrites only to .tokenimizer/"]
+    end
+```
+
+### ① Skill files
+
+Instruction blocks fenced inside each assistant's native config file. Every AI reads them at session start — no daemon, no runtime cost.
+
+| Config file | Assistant |
+|---|---|
+| `.claude/CLAUDE.md` | Claude Code |
+| `.cursorrules` | Cursor |
+| `.github/copilot-instructions.md` | GitHub Copilot |
+| `.windsurfrules` | Windsurf |
+| `.aider.conf.yml` | Aider |
+
+### ② Git hooks
+
+Installed into `.git/hooks/` and wired to four git checkpoints. All hooks are non-blocking — they never interrupt or fail a git operation.
+
+| Hook | What it does |
+|---|---|
+| `post-commit` | Refreshes `project_summary.md` and `handoff.md` |
+| `post-checkout` | Refreshes context docs on branch switch |
+| `post-merge` | Rebuilds the repo memory index |
+| `pre-push` | Warns if the index is stale (always exits 0) |
+
+### ③ Background watcher
+
+An optional chokidar daemon started with `tokenimizer watch`. Watches `src/**` for changes and marks the repo index stale automatically. Writes only to `.tokenimizer/` — never touches your source files.
+
+### Project directory layout
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                         YOUR PROJECT DIRECTORY                              │
-│                                                                             │
-│  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │  LAYER 1 — SKILL FILES  (always on, zero overhead)                  │   │
-│  │                                                                     │   │
-│  │  .claude/CLAUDE.md          ←  Claude Code reads this on start     │   │
-│  │  .cursorrules               ←  Cursor reads this on start          │   │
-│  │  .github/copilot-instructions.md  ←  Copilot reads this            │   │
-│  │  .windsurfrules             ←  Windsurf reads this on start        │   │
-│  │  .aider.conf.yml            ←  Aider reads this on start           │   │
-│  │                                                                     │   │
-│  │  Each file contains fenced skill blocks installed by tokenimizer.  │   │
-│  │  The AI reads them every session. No process running. No cost.     │   │
-│  └─────────────────────────────────────────────────────────────────────┘   │
-│                                                                             │
-│  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │  LAYER 2 — GIT HOOKS  (event-driven, fires at git checkpoints)     │   │
-│  │                                                                     │   │
-│  │  post-commit   →  regenerate context docs (project_summary, handoff)│   │
-│  │  post-checkout →  refresh handoff when you switch branches         │   │
-│  │  post-merge    →  rebuild repo memory index after a pull/merge     │   │
-│  │  pre-push      →  warn if index is stale (non-blocking)            │   │
-│  │                                                                     │   │
-│  │  Hooks are non-blocking. They never fail a git operation.          │   │
-│  └─────────────────────────────────────────────────────────────────────┘   │
-│                                                                             │
-│  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │  LAYER 3 — BACKGROUND WATCHER  (optional, opt-in)                  │   │
-│  │                                                                     │   │
-│  │  tokenimizer watch  →  chokidar daemon watches src/**              │   │
-│  │                         marks index stale when files change         │   │
-│  │                         writes only to .tokenimizer/ — never       │   │
-│  │                         touches your source files                  │   │
-│  └─────────────────────────────────────────────────────────────────────┘   │
-│                                                                             │
-│  .tokenimizer/                                                              │
-│  ├── context/        ← lifecycle docs (user-maintained, commit these)       │
-│  │   ├── project_summary.md                                                 │
-│  │   ├── architecture.md                                                    │
-│  │   ├── session_summary.md                                                 │
-│  │   ├── progress.md                                                        │
-│  │   ├── handoff.md                                                         │
-│  │   └── current_task.md                                                    │
-│  ├── cache/          ← generated index (gitignored)                         │
-│  │   ├── symbols.json                                                       │
-│  │   ├── api-map.json                                                       │
-│  │   ├── dependency-graph.json                                              │
-│  │   ├── architecture.json                                                  │
-│  │   ├── conventions.md                                                     │
-│  │   ├── glossary.md                                                        │
-│  │   └── wiki.md                                                            │
-│  ├── snapshots/      ← session checkpoints (gitignored)                     │
-│  └── hooks/          ← hook scripts called by .git/hooks/ (gitignored)     │
-└─────────────────────────────────────────────────────────────────────────────┘
+.tokenimizer/
+├── context/          ← lifecycle docs — commit these
+│   ├── project_summary.md
+│   ├── architecture.md
+│   ├── session_summary.md
+│   ├── progress.md
+│   ├── handoff.md
+│   └── current_task.md
+├── cache/            ← generated repo index — gitignored
+│   ├── symbols.json
+│   ├── api-map.json
+│   ├── dependency-graph.json
+│   ├── architecture.json
+│   ├── conventions.md
+│   ├── glossary.md
+│   └── wiki.md
+├── snapshots/        ← session checkpoints — gitignored
+└── hooks/            ← hook scripts — gitignored
 ```
 
 ---
