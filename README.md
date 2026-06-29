@@ -256,6 +256,112 @@ All figures are estimates. Actual savings depend on your workflow, model, and ta
 
 ---
 
+## The mechanics — why these numbers matter
+
+### Output tokens cost 3–5x more than input tokens
+
+Every major AI provider charges significantly more for generated output than for input context.
+At current published rates:
+
+| Provider / Model | Input | Output | Ratio |
+|---|---|---|---|
+| Claude Sonnet 4.6 | $3 / MTok | $15 / MTok | **5×** |
+| Claude Opus 4.8 | $15 / MTok | $75 / MTok | **5×** |
+| Claude Haiku 4.5 | $0.80 / MTok | $4 / MTok | **5×** |
+| GPT-4o | $2.50 / MTok | $10 / MTok | **4×** |
+| GPT-4o-mini | $0.15 / MTok | $0.60 / MTok | **4×** |
+
+This means **output suppression skills (Caveman Mode, Patch-Only) have the highest dollar
+return per token saved** — roughly 4–5× better ROI than the same reduction in input tokens.
+
+### Where each skill attacks the bill
+
+**Output token suppression (highest ROI):**
+
+- **Caveman Mode** targets conversational filler — preambles, "Great question!", trailing
+  summaries, explanatory prose. These add zero technical value but can double response
+  length in a typical session. Removing them cuts output 50–70% while preserving precision.
+
+- **Patch-Only Coding** targets code output. Without it, an AI editing three lines of a
+  300-line file often reprints the whole file "for context." With it, output is a function
+  replacement or a unified diff — the same information in ~5% of the tokens.
+
+**Input token compression (second priority):**
+
+- **Context Compressor** prevents you from carrying 50,000+ tokens of raw chat history into
+  a new session. A compressed snapshot restores full context at 300–600 tokens. Starting
+  fresh from a snapshot instead of a continued conversation saves ~70% of input tokens on
+  session restart.
+
+- **Repo-Aware Minimal Context** blocks the aggressive context loading common in IDE agents
+  (reading lockfiles, entire directory trees, build artifacts). Enforcing progressive loading
+  (project summary → module → file → function) keeps the context window lean from the start.
+
+---
+
+## Trade-offs and when it is NOT worth it
+
+tokenimizer has a real cost: every installed skill injects a static instruction block into
+your AI assistant's config file. Installing all 7 skills adds approximately **800–1,000
+tokens of permanent system context** to every session (measured from the actual skill file
+sizes in `src/registry/skills/`).
+
+If you run short, one-off sessions — ask two questions, close the tab — the instruction
+overhead can exceed what you save on output. The break-even point is roughly:
+
+> **Break-even:** session output tokens saved > ~1,000 input tokens of overhead
+
+For long coding sessions this break-even is crossed within minutes. For a single quick
+lookup, it may never be crossed.
+
+### Known caveats
+
+**Skill toggles are more efficient than always-on**
+
+Caveman Mode is blunt by design. It is the right default during intense coding and
+refactoring, but it reduces explanatory quality for learning tasks or architectural
+discussions where you want the AI to reason aloud. Use the toggle:
+
+```
+/caveman    ← activate for focused implementation work
+/normal     ← deactivate when you need detailed explanations
+```
+
+**Patch-Only and native IDE tools can interact**
+
+Claude Code and similar tools have built-in targeted edit primitives (they write specific
+blocks, not whole files). The Patch-Only skill is compatible with these — it allows
+function-level replacements as the primary format, not only strict unified diffs — but
+on complex multi-file tasks the instruction overhead occasionally causes the model to
+over-think the output format before acting. If you find this happening, uninstall just
+the patch-only skill: `tokenimizer uninstall patch-only`.
+
+**Context docs require maintenance**
+
+`session_summary.md`, `progress.md`, and `current_task.md` are templates. If left
+unfilled or stale they burn input tokens for no benefit. The git hooks (`post-commit`,
+`post-checkout`) refresh the auto-generated docs automatically, but the user-maintained
+files are yours to keep current.
+
+---
+
+## Is it worth it for your workflow?
+
+| Profile | Worth it? | Reason |
+|---|---|---|
+| Heavy IDE agent usage (Claude Code, Cursor, Windsurf) | **Yes — high ROI** | Output tokens accumulate fast in long agentic sessions; caveman + patch-only cut the majority |
+| Large codebase refactoring | **Yes — high ROI** | Progressive context loading prevents context window exhaustion; patch-only keeps diffs small |
+| API cost-conscious teams | **Yes — high ROI** | Direct reduction in billable output tokens across Anthropic / OpenAI / Gemini keys |
+| Learning new concepts or frameworks | **Selective** | Install context-compressor and repo-aware-context; skip caveman (you want the explanations) |
+| Casual or beginner use | **Low ROI** | Terse caveman output reduces learning quality; short sessions don't amortize the overhead |
+| Short one-off scripting | **Low ROI** | Static instruction overhead (~1,000 tokens) outweighs output savings on brief tasks |
+
+**Recommended minimum setup** for most developers: install `caveman` and `context-compressor`,
+skip the rest until you feel the pain they solve. Add skills one at a time so you can
+measure their individual effect.
+
+---
+
 ## Context lifecycle
 
 `tokenimizer context init` generates six structured documents that tell the AI about your
