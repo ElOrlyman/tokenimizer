@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import glob from 'fast-glob';
 import { writeAtomic, ensureDir } from '../utils/fs.js';
-import { estimateTokens, formatTokens } from './tokenizer.js';
+import { estimateTokens } from './tokenizer.js';
 
 const CACHE_DIR = (cwd: string) => path.join(cwd, '.tokenimizer', 'cache');
 
@@ -11,6 +11,18 @@ const IGNORE = [
   '**/coverage/**', '**/.next/**', '**/.tokenimizer/**',
   '**/*.min.js', '**/*.min.css', '**/*.map',
 ];
+
+const MAX_FILE_BYTES = 512 * 1024; // skip files larger than 512 KB
+
+function readSourceFile(filePath: string): string | null {
+  try {
+    const stat = fs.statSync(filePath);
+    if (stat.size > MAX_FILE_BYTES) return null;
+    return fs.readFileSync(filePath, 'utf8');
+  } catch {
+    return null;
+  }
+}
 
 export interface IndexResult {
   artifacts: Array<{ name: string; tokens: number; path: string }>;
@@ -44,8 +56,8 @@ async function extractSymbols(cwd: string): Promise<Symbol[]> {
   const symbols: Symbol[] = [];
 
   for (const file of files.slice(0, 100)) {
-    let content: string;
-    try { content = fs.readFileSync(file, 'utf8'); } catch { continue; }
+    const content = readSourceFile(file);
+    if (content === null) continue;
 
     const lines = content.split('\n');
     lines.forEach((line, idx) => {
@@ -85,8 +97,8 @@ async function buildDependencyGraph(cwd: string): Promise<DepNode[]> {
   const nodes: DepNode[] = [];
 
   for (const file of files.slice(0, 80)) {
-    let content: string;
-    try { content = fs.readFileSync(file, 'utf8'); } catch { continue; }
+    const content = readSourceFile(file);
+    if (content === null) continue;
 
     const imports: string[] = [];
     let m: RegExpExecArray | null;
@@ -124,8 +136,8 @@ async function buildApiMap(cwd: string): Promise<ApiEntry[]> {
   const entries: ApiEntry[] = [];
 
   for (const file of files.slice(0, 80)) {
-    let content: string;
-    try { content = fs.readFileSync(file, 'utf8'); } catch { continue; }
+    const content = readSourceFile(file);
+    if (content === null) continue;
 
     const relFile = path.relative(cwd, file).replace(/\\/g, '/');
     const lines   = content.split('\n');
@@ -202,12 +214,11 @@ async function extractConventions(cwd: string): Promise<string> {
 // ---------------------------------------------------------------------------
 
 async function buildArchitectureJson(cwd: string): Promise<object> {
-  const IGNORE = ['node_modules', '.git', 'dist', 'build', 'coverage', '.next', '.tokenimizer'];
   const result: Record<string, { files: number; types: string[]; purpose?: string }> = {};
 
   const sourceFiles = await glob(['**/*.{ts,tsx,js,jsx,py,go,rs,java,cs}'], {
     cwd,
-    ignore: IGNORE.map(d => `**/${d}/**`),
+    ignore: IGNORE,
     onlyFiles: true,
     deep: 4,
   });
@@ -340,53 +351,33 @@ export async function buildIndex(cwd: string): Promise<IndexResult> {
   const dir = CACHE_DIR(cwd);
   ensureDir(dir);
 
-  const artifacts: IndexResult['artifacts'] = [];
+  type ArtifactSpec = { name: string; content: string };
 
-  // symbols.json
-  const symbols = await extractSymbols(cwd);
-  const symbolsJson = JSON.stringify(symbols, null, 2);
-  const symbolsPath = path.join(dir, 'symbols.json');
-  writeAtomic(symbolsPath, symbolsJson);
-  artifacts.push({ name: 'symbols.json', tokens: estimateTokens(symbolsJson), path: symbolsPath });
+  const save = (name: string, content: string): IndexResult['artifacts'][number] => {
+    const p = path.join(dir, name);
+    writeAtomic(p, content);
+    return { name, tokens: estimateTokens(content), path: p };
+  };
 
-  // api-map.json
-  const apiMap = await buildApiMap(cwd);
-  const apiMapJson = JSON.stringify(apiMap, null, 2);
-  const apiMapPath = path.join(dir, 'api-map.json');
-  writeAtomic(apiMapPath, apiMapJson);
-  artifacts.push({ name: 'api-map.json', tokens: estimateTokens(apiMapJson), path: apiMapPath });
+  const [symbols, apiMap, depGraph, conventions, glossary, arch, wiki] = await Promise.all([
+    extractSymbols(cwd),
+    buildApiMap(cwd),
+    buildDependencyGraph(cwd),
+    extractConventions(cwd),
+    buildGlossary(cwd),
+    buildArchitectureJson(cwd),
+    buildWiki(cwd),
+  ]);
 
-  // dependency-graph.json
-  const depGraph = await buildDependencyGraph(cwd);
-  const depGraphJson = JSON.stringify(depGraph, null, 2);
-  const depGraphPath = path.join(dir, 'dependency-graph.json');
-  writeAtomic(depGraphPath, depGraphJson);
-  artifacts.push({ name: 'dependency-graph.json', tokens: estimateTokens(depGraphJson), path: depGraphPath });
-
-  // conventions.md
-  const conventions = await extractConventions(cwd);
-  const conventionsPath = path.join(dir, 'conventions.md');
-  writeAtomic(conventionsPath, conventions);
-  artifacts.push({ name: 'conventions.md', tokens: estimateTokens(conventions), path: conventionsPath });
-
-  // glossary.md
-  const glossary = await buildGlossary(cwd);
-  const glossaryPath = path.join(dir, 'glossary.md');
-  writeAtomic(glossaryPath, glossary);
-  artifacts.push({ name: 'glossary.md', tokens: estimateTokens(glossary), path: glossaryPath });
-
-  // architecture.json
-  const archJson     = await buildArchitectureJson(cwd);
-  const archJsonStr  = JSON.stringify(archJson, null, 2);
-  const archJsonPath = path.join(dir, 'architecture.json');
-  writeAtomic(archJsonPath, archJsonStr);
-  artifacts.push({ name: 'architecture.json', tokens: estimateTokens(archJsonStr), path: archJsonPath });
-
-  // wiki.md
-  const wiki     = await buildWiki(cwd);
-  const wikiPath = path.join(dir, 'wiki.md');
-  writeAtomic(wikiPath, wiki);
-  artifacts.push({ name: 'wiki.md', tokens: estimateTokens(wiki), path: wikiPath });
+  const artifacts: IndexResult['artifacts'] = [
+    save('symbols.json',        JSON.stringify(symbols,   null, 2)),
+    save('api-map.json',        JSON.stringify(apiMap,    null, 2)),
+    save('dependency-graph.json', JSON.stringify(depGraph, null, 2)),
+    save('conventions.md',      conventions),
+    save('glossary.md',         glossary),
+    save('architecture.json',   JSON.stringify(arch,      null, 2)),
+    save('wiki.md',             wiki),
+  ];
 
   // Write manifest
   const manifest = {

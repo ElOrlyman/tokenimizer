@@ -17,6 +17,7 @@ const SCRIPT_HEADER = `#!/usr/bin/env node
 'use strict';
 // Managed by tokenimizer — regenerate with: tokenimizer hooks install
 const { execSync } = require('child_process');
+const path = require('path');
 const cwd = process.cwd();
 
 function run(cmd) {
@@ -28,17 +29,14 @@ function run(cmd) {
 }
 
 function findBin() {
-  // Try global first, then local node_modules, then npx
-  const bins = [
-    'tokenimizer',
-    require('path').join(cwd, 'node_modules', '.bin', 'tokenimizer'),
-  ];
-  for (const b of bins) {
-    try {
-      execSync(b + ' --version', { stdio: 'ignore' });
-      return b;
-    } catch (_) {}
+  // Prefer the exact binary that installed the hooks (avoids PATH hijacking)
+  const trusted = process.env.TOKENIMIZER_BIN;
+  if (trusted) {
+    try { execSync(trusted + ' --version', { stdio: 'ignore' }); return trusted; } catch (_) {}
   }
+  // Fallback: local node_modules only (skip bare 'tokenimizer' PATH lookup)
+  const local = path.join(cwd, 'node_modules', '.bin', 'tokenimizer');
+  try { execSync(local + ' --version', { stdio: 'ignore' }); return local; } catch (_) {}
   return null;
 }
 

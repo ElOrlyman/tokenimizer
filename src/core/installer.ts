@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { writeAtomic, readOrNull, ensureDir } from '../utils/fs.js';
-import { appData, home } from '../utils/paths.js';
+import { home } from '../utils/paths.js';
 import type { AssistantId } from '../types/config.js';
 
 // ---------------------------------------------------------------------------

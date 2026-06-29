@@ -15,7 +15,8 @@
   },
   "files": [
     "dist",
-    "scripts/prepare.mjs"
+    "scripts/prepare.mjs",
+    "LICENSE"
   ],
   "engines": {
     "node": ">=18"

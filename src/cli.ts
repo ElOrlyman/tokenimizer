@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import path from 'path';
 import { Command } from 'commander';
 import { disableColors, disableEmoji } from './ui/theme.js';
 import { setJsonMode, setDryRun, ui, out } from './ui/io.js';
@@ -60,7 +61,13 @@ program.addCommand(makeWatchCommand());
 // Daemon entry point — watcher process spawns itself with --watcher-daemon
 const daemonCwdIdx = process.argv.indexOf('--watcher-cwd');
 if (process.argv.includes('--watcher-daemon')) {
-  const daemonCwd = daemonCwdIdx !== -1 ? process.argv[daemonCwdIdx + 1] : process.cwd();
+  const rawCwd    = daemonCwdIdx !== -1 ? process.argv[daemonCwdIdx + 1] : process.cwd();
+  const daemonCwd = path.resolve(rawCwd);
+  // Reject paths that escaped cwd via traversal (daemon must stay inside a real directory)
+  if (!daemonCwd || daemonCwd === path.sep) {
+    process.stderr.write('tokenimizer: invalid --watcher-cwd\n');
+    process.exit(1);
+  }
   import('./core/watcher/index.js')
     .then(({ runDaemon }) => runDaemon(daemonCwd))
     .catch(() => process.exit(1));

@@ -27,10 +27,12 @@ function readPid(cwd: string): number | null {
   const p = PID_FILE(cwd);
   if (!fs.existsSync(p)) return null;
   const n = parseInt(fs.readFileSync(p, 'utf8').trim(), 10);
-  return isNaN(n) ? null : n;
+  return (isNaN(n) || n <= 1) ? null : n;
 }
 
 function isProcessRunning(pid: number): boolean {
+  // Refuse to interact with PID 0 (broadcast) or PID 1 (init/systemd)
+  if (pid <= 1) return false;
   try {
     process.kill(pid, 0);
     return true;
