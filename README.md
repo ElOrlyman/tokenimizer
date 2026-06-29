@@ -14,6 +14,7 @@ npx tokenimizer init
 
 ## Table of contents
 
+- [How to use](#how-to-use)
 - [How it works](#how-it-works)
 - [Installation](#installation)
 - [The 7 token-saving skills](#the-7-token-saving-skills)
@@ -31,6 +32,77 @@ npx tokenimizer init
 - [Project layout](#project-layout)
 - [Development](#development)
 - [License](#license)
+
+---
+
+## How to use
+
+You need Node.js 18+ installed. That's the only requirement.
+
+### Step 1 — Run the setup wizard
+
+Open a terminal inside your project folder and run:
+
+```bash
+npx tokenimizer init
+```
+
+The wizard scans your machine, detects which AI assistants you have installed, and walks you through picking which skills to enable. It takes about 30 seconds.
+
+> **Don't have it installed globally?** That's fine — `npx` downloads and runs it automatically. You can also install it once with `npm install -g tokenimizer` and skip `npx` from that point forward.
+
+### Step 2 — Skills are now active
+
+That's it. tokenimizer has written instruction blocks into each assistant's config file:
+
+| If you use… | tokenimizer wrote to… |
+|---|---|
+| Claude Code | `.claude/CLAUDE.md` |
+| GitHub Copilot | `.github/copilot-instructions.md` |
+| Cursor | `.cursorrules` |
+| Windsurf | `.windsurfrules` |
+| Aider | `.aider.conf.yml` |
+| Any other assistant | `generic.md` instructions |
+
+The next time you open your AI assistant, the skills are already in effect. You don't need to restart anything, change any settings, or paste any prompts.
+
+### Step 3 — Use your AI assistant normally
+
+Nothing changes about how you work. Open Copilot in VS Code, ask Claude Code a question, start a Cursor session — your assistant will automatically:
+
+- Drop filler and padding from its responses
+- Output diffs instead of rewriting entire files
+- Ask fewer clarifying questions before acting
+- Warn you before running large expensive operations
+
+### Optional — enable git automation
+
+Install git hooks so context docs refresh automatically on every commit:
+
+```bash
+tokenimizer hooks install
+tokenimizer context init
+```
+
+After this, every `git commit` triggers a context refresh and every `git merge` rebuilds the repo index. Useful on larger projects where you hand off sessions frequently.
+
+### Optional — save context between sessions
+
+When a conversation gets long and you need to start fresh:
+
+```bash
+tokenimizer compress     # prints a ~400-token summary of the session
+tokenimizer handoff      # prints a ready-to-paste restart block
+```
+
+Paste the output as the first message in your new session. Your AI assistant will have full context at a fraction of the token cost.
+
+### Check what's installed at any time
+
+```bash
+tokenimizer list      # shows every skill and which assistants have it
+tokenimizer doctor    # verifies skills are intact and not manually modified
+```
 
 ---
 
