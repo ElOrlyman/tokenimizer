@@ -4,15 +4,26 @@
   "description": "The operating system for token-efficient AI workflows",
   "repository": {
     "type": "git",
-    "url": "https://github.com/strootman-advertising/tokenimizer.git"
+    "url": "git+https://github.com/ElOrlyman/tokenimizer.git"
+  },
+  "homepage": "https://elorlyman.github.io/tokenimizer/",
+  "bugs": {
+    "url": "https://github.com/ElOrlyman/tokenimizer/issues"
   },
   "bin": {
     "tokenimizer": "dist/cli.js"
   },
+  "files": [
+    "dist",
+    "scripts/prepare.mjs"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "build": "esbuild src/cli.ts --bundle --platform=node --outdir=dist && node scripts/copy-registry.mjs",
     "build:watch": "esbuild src/cli.ts --bundle --platform=node --outdir=dist --watch",
-    "prepare": "node scripts/prepare.js",
+    "prepare": "node scripts/prepare.mjs",
     "prepublishOnly": "npm run build",
     "test": "vitest run --fileParallelism=false",
     "test:watch": "vitest",
@@ -24,10 +35,17 @@
     "claude",
     "copilot",
     "cursor",
+    "windsurf",
+    "aider",
     "skills",
-    "prompt-engineering"
+    "prompt-engineering",
+    "token-optimization"
   ],
-  "author": "Strootman Advertising",
+  "author": {
+    "name": "ElOrlyman",
+    "email": "orlandomiranda.dev@gmail.com",
+    "url": "https://github.com/ElOrlyman"
+  },
   "license": "MIT",
   "dependencies": {
     "chokidar": "^5.0.0",
